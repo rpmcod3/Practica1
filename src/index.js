@@ -9,6 +9,17 @@ import {Server} from 'socket.io'
 import ProductsManager from './class/productManager.js'
 import { mongoConnection } from './connection/mongo.js'
 
+
+import morgan from 'morgan'; 
+import mongoose from 'mongoose';
+import passport from 'passport' 
+import cookieParser from 'cookie-parser';
+import { initializePassport } from './config/passport.config.js';
+import { authRouter } from './routes/auth.routes.js';
+
+
+
+
 const app = express()
 mongoConnection()
 
@@ -21,10 +32,24 @@ app.set('view engine', 'handlebars')
 app.use(express.json())
 app.use(express.urlencoded({ extended:true }))
 app.use(express.static(__dirname + '/public'))
+
+app.use(morgan("dev"));
+app.use(cookieParser());
+
+
 app.use('/api/products', producsRoute)
 app.use('/api/carts', cartsRoute)
 app.use('/home', homeRoute)
 app.use('/realtimeproducts', realTimeProducts) 
+
+
+initializePassport();
+app.use(passport.initialize());
+
+
+app.use("auth", authRouter)
+
+
 
 const httpServer = app.listen(8080,()=>{
     console.log("Servidor correctamente Iniciado")
